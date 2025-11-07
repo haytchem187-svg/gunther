@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Recibo de pago #{{ pago.id }}{% endblock %}
+
+{% block extra_head %}
+<style>
+@media print {
+    nav, .btn-imprimir { display: none !important; }
+    body { background: white; }
+    main.container { margin: 0; max-width: 100%; }
+    .card { box-shadow: none; border: none; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-4">
+            <div>
+                <h1 class="h4 mb-1">Recibo de pago</h1>
+                <p class="text-muted mb-0">Crédito #{{ pago.credito.id }} - {{ pago.credito.cliente.nombre_completo }}</p>
+            </div>
+            <button class="btn btn-outline-secondary btn-imprimir" onclick="window.print()">Imprimir</button>
+        </div>
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="text-muted small">Fecha del pago</div>
+                <div class="fw-semibold">{{ pago.fecha_pago }}</div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-muted small">Monto recibido</div>
+                <div class="fw-semibold">${{ pago.monto|floatformat:2 }}</div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-muted small">Método</div>
+                <div class="fw-semibold">{{ pago.metodo_pago|default:"No especificado" }}</div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-muted small">Referencia</div>
+                <div class="fw-semibold">{{ pago.referencia|default:"No registrada" }}</div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-muted small">Saldo restante</div>
+                <div class="fw-semibold">${{ pago.credito.saldo_pendiente|floatformat:2 }}</div>
+            </div>
+        </div>
+        <h2 class="h5">Detalle de aplicación</h2>
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Cuota</th>
+                        <th>Vencimiento</th>
+                        <th>Monto aplicado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for detalle in detalles %}
+                        <tr>
+                            <td>#{{ detalle.cuota.numero }}</td>
+                            <td>{{ detalle.cuota.fecha_vencimiento }}</td>
+                            <td>${{ detalle.monto_aplicado|floatformat:2 }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center text-muted">Sin detalles</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if pago.notas %}
+            <div class="mt-3">
+                <div class="text-muted small">Notas</div>
+                <p class="mb-0">{{ pago.notas }}</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
