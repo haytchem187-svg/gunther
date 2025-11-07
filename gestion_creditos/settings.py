@@ -27,7 +27,6 @@ SECRET_KEY = "django-insecure-26*bxygl4h(lnf+@d4n$e=gt11@h1+4w7(h73w5%96&kbsk86k
 DEBUG = True
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
-
 # Application definition
 
 INSTALLED_APPS = [
