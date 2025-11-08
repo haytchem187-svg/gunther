@@ -30,9 +30,9 @@ DEBUG = True
 #ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 ALLOWED_HOSTS = [
-    "peaceful-surprise-production-b854.up.railway.app",
     "localhost",
-    "127.0.0.1"
+    "127.0.0.1",
+    "peaceful-surprise-production-b854.up.railway.app"
 ]
 
 CSRF_TRUSTED_ORIGINS = [
