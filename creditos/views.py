@@ -8,12 +8,13 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views import View
 from django.views.generic import DetailView, ListView, TemplateView
+from django.contrib.auth.mixins import LoginRequiredMixin  # <--- IMPORTANTE
 
 from .forms import ClienteForm, CreditoForm, PagoForm
 from .models import Cliente, Credito, Cuota, Pago
 
 
-class DashboardView(TemplateView):
+class DashboardView(LoginRequiredMixin, TemplateView):
     template_name = "creditos/dashboard.html"
 
     def get_context_data(self, **kwargs):
@@ -70,7 +71,7 @@ class DashboardView(TemplateView):
         return context
 
 
-class ClienteListView(ListView):
+class ClienteListView(LoginRequiredMixin, ListView):
     model = Cliente
     template_name = "creditos/clientes/lista.html"
     context_object_name = "clientes"
@@ -93,7 +94,7 @@ class ClienteListView(ListView):
         return context
 
 
-class ClienteDetailView(DetailView):
+class ClienteDetailView(LoginRequiredMixin, DetailView):
     model = Cliente
     template_name = "creditos/clientes/detalle.html"
     context_object_name = "cliente"
@@ -104,7 +105,7 @@ class ClienteDetailView(DetailView):
         return context
 
 
-class ClienteCreateView(View):
+class ClienteCreateView(LoginRequiredMixin, View):
     template_name = "creditos/clientes/formulario.html"
 
     def get(self, request):
@@ -120,7 +121,7 @@ class ClienteCreateView(View):
         return render(request, self.template_name, {"form": form})
 
 
-class ClienteUpdateView(View):
+class ClienteUpdateView(LoginRequiredMixin, View):
     template_name = "creditos/clientes/formulario.html"
 
     def dispatch(self, request, *args, **kwargs):
@@ -141,7 +142,7 @@ class ClienteUpdateView(View):
         return render(request, self.template_name, {"form": form, "cliente": self.cliente})
 
 
-class CreditoCrearView(View):
+class CreditoCrearView(LoginRequiredMixin, View):
     template_name = "creditos/creditos/formulario.html"
 
     def dispatch(self, request, *args, **kwargs):
@@ -174,7 +175,7 @@ class CreditoCrearView(View):
         )
 
 
-class CreditoDetailView(DetailView):
+class CreditoDetailView(LoginRequiredMixin, DetailView):
     model = Credito
     template_name = "creditos/creditos/detalle.html"
     context_object_name = "credito"
@@ -188,7 +189,7 @@ class CreditoDetailView(DetailView):
         return context
 
 
-class RegistrarPagoView(View):
+class RegistrarPagoView(LoginRequiredMixin, View):
     template_name = "creditos/pagos/formulario.html"
 
     def dispatch(self, request, *args, **kwargs):
@@ -228,7 +229,7 @@ class RegistrarPagoView(View):
         )
 
 
-class ReciboPagoView(DetailView):
+class ReciboPagoView(LoginRequiredMixin, DetailView):
     model = Pago
     template_name = "creditos/pagos/recibo.html"
     context_object_name = "pago"
