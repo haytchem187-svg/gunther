@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Cliente {{ cliente.nombre_completo }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-0">{{ cliente.nombre_completo }}</h1>
+        <p class="text-muted mb-0">Identificación: {{ cliente.identificacion }}</p>
+    </div>
+    <div class="btn-group">
+        <a href="{% url 'creditos:cliente_editar' cliente.pk %}" class="btn btn-outline-secondary">Editar</a>
+        <a href="{% url 'creditos:credito_nuevo' cliente.pk %}" class="btn btn-primary">Nuevo crédito</a>
+    </div>
+</div>
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h5">Datos de contacto</h2>
+                <dl class="row mb-0">
+                    <dt class="col-sm-5">Teléfono</dt>
+                    <dd class="col-sm-7">{{ cliente.telefono|default:"No registrado" }}</dd>
+                    <dt class="col-sm-5">Correo</dt>
+                    <dd class="col-sm-7">{{ cliente.email|default:"No registrado" }}</dd>
+                    <dt class="col-sm-5">Dirección</dt>
+                    <dd class="col-sm-7">{{ cliente.direccion|default:"No registrada" }}</dd>
+                    <dt class="col-sm-5">Registro</dt>
+                    <dd class="col-sm-7">{{ cliente.fecha_registro }}</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h5">Créditos</h2>
+                {% if creditos %}
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Monto</th>
+                                    <th>Estado</th>
+                                    <th>Inicio</th>
+                                    <th>Saldo</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for credito in creditos %}
+                                    <tr>
+                                        <td>#{{ credito.id }}</td>
+                                        <td>${{ credito.monto|floatformat:2 }}</td>
+                                        <td>
+                                            {% if credito.estado == 'en_mora' %}
+                                                <span class="badge bg-danger">En mora</span>
+                                            {% elif credito.estado == 'cancelado' %}
+                                                <span class="badge bg-success">Cancelado</span>
+                                            {% else %}
+                                                <span class="badge bg-info text-dark">Activo</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ credito.fecha_inicio }}</td>
+                                        <td>${{ credito.saldo_pendiente|floatformat:2 }}</td>
+                                        <td class="text-end"><a href="{% url 'creditos:credito_detalle' credito.pk %}" class="btn btn-sm btn-outline-primary">Ver</a></td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">Este cliente aún no tiene créditos registrados.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

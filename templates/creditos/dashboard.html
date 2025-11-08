@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Panel general{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3">Panel general</h1>
+    <a href="{% url 'creditos:cliente_nuevo' %}" class="btn btn-success">Registrar cliente</a>
+</div>
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card card-dashboard shadow-sm">
+            <div class="card-body">
+                <div class="card-title text-muted">Créditos activos</div>
+                <div class="display-6">{{ total_creditos_activos }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-dashboard shadow-sm">
+            <div class="card-body">
+                <div class="card-title text-muted">Dinero por cobrar</div>
+                <div class="display-6">${{ dinero_por_cobrar|floatformat:2 }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-dashboard shadow-sm">
+            <div class="card-body">
+                <div class="card-title text-muted">Pagos del día</div>
+                <div class="display-6">${{ pagos_del_dia|floatformat:2 }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-dashboard shadow-sm">
+            <div class="card-body">
+                <div class="card-title text-muted">Pagos del mes</div>
+                <div class="display-6">${{ pagos_del_mes|floatformat:2 }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h2 class="h5 mb-0">Clientes con pagos atrasados</h2>
+            </div>
+            <div class="card-body">
+                {% if clientes_en_mora %}
+                    <ul class="list-group list-group-flush">
+                        {% for cliente in clientes_en_mora %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>{{ cliente.nombre_completo }}</span>
+                                <a href="{% url 'creditos:cliente_detalle' cliente.pk %}" class="btn btn-outline-primary btn-sm">Ver</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted mb-0">No hay clientes en mora en este momento.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h2 class="h5 mb-0">Próximos vencimientos</h2>
+            </div>
+            <div class="card-body">
+                {% if cuotas_vencidas %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Crédito</th>
+                                    <th>Vencimiento</th>
+                                    <th>Saldo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cuota in cuotas_vencidas %}
+                                    <tr>
+                                        <td>{{ cuota.credito.cliente.nombre_completo }}</td>
+                                        <td><a href="{% url 'creditos:credito_detalle' cuota.credito.pk %}">#{{ cuota.credito.id }}</a></td>
+                                        <td>{{ cuota.fecha_vencimiento }}</td>
+                                        <td>${{ cuota.saldo|floatformat:2 }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">Sin vencimientos vencidos.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

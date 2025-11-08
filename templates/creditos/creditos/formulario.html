@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Nuevo crédito{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-7">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h1 class="h4 mb-1">Nuevo crédito</h1>
+                <p class="text-muted">Cliente: <strong>{{ cliente.nombre_completo }}</strong> ({{ cliente.identificacion }})</p>
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label class="form-label" for="id_{{ field.name }}">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <div class="form-text">{{ field.help_text }}</div>
+                            {% endif %}
+                            {% for error in field.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                    <div class="alert alert-info">Tras guardar se generará automáticamente el plan de pagos mensual con amortización francesa.</div>
+                    <div class="text-end">
+                        <a href="{% url 'creditos:cliente_detalle' cliente.pk %}" class="btn btn-outline-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">Crear crédito</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
