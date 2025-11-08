@@ -1,1 +1,1 @@
-web: python manage.py migrate && gunicorn gunther.wsgi
+web: gunicorn gestion_creditos.wsgi
