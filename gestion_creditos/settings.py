@@ -34,8 +34,9 @@ ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1"
 ]
+
 CSRF_TRUSTED_ORIGINS = [
-    "https://peaceful-surprise-production-b854.up.railway.app",
+    "https://peaceful-surprise-production-b854.up.railway.app"
 ]
 
 # Application definition
