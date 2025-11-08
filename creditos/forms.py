@@ -34,8 +34,11 @@ class ClienteForm(forms.ModelForm):
 class CreditoForm(forms.ModelForm):
     fecha_inicio = forms.DateField(
         label="Fecha de inicio",
-        initial=timezone.localdate,
-        widget=forms.DateInput(attrs={"type": "date"}),
+        widget=forms.DateInput(
+            attrs={"type": "date"},
+            format="%Y-%m-%d"
+        ),
+        input_formats=["%Y-%m-%d"],
     )
 
     class Meta:
@@ -53,6 +56,9 @@ class CreditoForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        # Set initial value in proper format for HTML5 date input
+        if not self.instance.pk and 'fecha_inicio' not in self.data:
+            self.initial['fecha_inicio'] = timezone.localdate()
         for name, field in self.fields.items():
             widget = field.widget
             classes = widget.attrs.get("class", "")
@@ -62,8 +68,11 @@ class CreditoForm(forms.ModelForm):
 class PagoForm(forms.ModelForm):
     fecha_pago = forms.DateField(
         label="Fecha de pago",
-        initial=timezone.localdate,
-        widget=forms.DateInput(attrs={"type": "date"}),
+        widget=forms.DateInput(
+            attrs={"type": "date"},
+            format="%Y-%m-%d"
+        ),
+        input_formats=["%Y-%m-%d"],
     )
 
     class Meta:
@@ -76,6 +85,9 @@ class PagoForm(forms.ModelForm):
     def __init__(self, *args, credito: Credito, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.credito = credito
+        # Set initial value in proper format for HTML5 date input
+        if not self.instance.pk and 'fecha_pago' not in self.data:
+            self.initial['fecha_pago'] = timezone.localdate()
         self.fields["monto"].widget.attrs["min"] = "0.01"
         self.fields["monto"].widget.attrs["step"] = "0.01"
         for field in self.fields.values():
