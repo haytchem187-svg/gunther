@@ -1,8 +1,8 @@
-asgiref==3.10.0
-dj-database-url==3.0.1
-Django==5.2.8
-gunicorn==23.0.0
-packaging==25.0
-sqlparse==0.5.3
-tzdata==2025.2
+asgiref
+Django
+dj-database-url
+gunicorn
 psycopg2-binary
+packaging
+sqlparse
+tzdata
