@@ -28,6 +28,10 @@ DEBUG = True
 # Usar variable de entorno en Railway para el dominio de producción
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://peaceful-surprise-production-b854.up.railway.app",
+]
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -73,11 +77,12 @@ WSGI_APPLICATION = "gestion_creditos.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+import dj_database_url
+
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
+    "default": dj_database_url.config(
+        default=os.environ.get("DATABASE_URL")
+    )
 }
 
 # Password validation
