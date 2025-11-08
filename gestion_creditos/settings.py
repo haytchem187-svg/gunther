@@ -27,8 +27,13 @@ SECRET_KEY = "django-insecure-26*bxygl4h(lnf+@d4n$e=gt11@h1+4w7(h73w5%96&kbsk86k
 DEBUG = True
 
 # Usar variable de entorno en Railway para el dominio de producción
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+#ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
+ALLOWED_HOSTS = [
+    "peaceful-surprise-production-b854.up.railway.app",
+    "localhost",
+    "127.0.0.1"
+]
 CSRF_TRUSTED_ORIGINS = [
     "https://peaceful-surprise-production-b854.up.railway.app",
 ]
