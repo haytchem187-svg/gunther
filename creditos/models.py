@@ -11,6 +11,7 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from . import utils
 
+
 # --- NUEVO MODELO Empresa ---
 class Empresa(models.Model):
     nombre = models.CharField(max_length=200, unique=True)
@@ -21,13 +22,24 @@ class Empresa(models.Model):
     def __str__(self):
         return self.nombre
 
+
 # --- PERFIL DE USUARIO (vincula usuario a empresa) ---
 class UsuarioPerfil(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE)
+
+    # 🔸 Cambio clave: ahora la empresa puede ser opcional
+    empresa = models.ForeignKey(
+        Empresa,
+        on_delete=models.SET_NULL,   # Si la empresa se elimina, no borra el usuario
+        null=True,                   # Permite nulos (usuarios sin empresa)
+        blank=True                   # Campo opcional en formularios/admin
+    )
 
     def __str__(self):
-        return f"{self.user.username} - {self.empresa.nombre}"
+        if self.empresa:
+            return f"{self.user.username} - {self.empresa.nombre}"
+        return f"{self.user.username} (sin empresa)"
+
 
 # --- MODIFICADO: Relación empresa en Cliente ---
 class Cliente(models.Model):
@@ -47,7 +59,7 @@ class Cliente(models.Model):
         verbose_name = "Cliente"
         verbose_name_plural = "Clientes"
 
-    def __str__(self) -> str:  # pragma: no cover - representación básica
+    def __str__(self) -> str:
         if self.apellidos:
             return f"{self.nombres} {self.apellidos}".strip()
         return self.nombres
@@ -61,6 +73,7 @@ class Cliente(models.Model):
         for credito in self.creditos.all():
             total += credito.saldo_pendiente()
         return total
+
 
 class Credito(models.Model):
     class Estados(models.TextChoices):
@@ -84,9 +97,7 @@ class Credito(models.Model):
         decimal_places=2,
         validators=[MinValueValidator(Decimal("0"))],
     )
-    fecha_inicio = models.DateField(
-        "Fecha de inicio", default=timezone.localdate
-    )
+    fecha_inicio = models.DateField("Fecha de inicio", default=timezone.localdate)
     estado = models.CharField(
         "Estado",
         max_length=20,
@@ -102,7 +113,7 @@ class Credito(models.Model):
         verbose_name = "Crédito"
         verbose_name_plural = "Créditos"
 
-    def __str__(self) -> str:  # pragma: no cover - representación básica
+    def __str__(self) -> str:
         return f"Crédito #{self.id} - {self.cliente.nombre_completo}"
 
     @property
@@ -239,7 +250,7 @@ class Cuota(models.Model):
         verbose_name_plural = "Cuotas"
         unique_together = ("credito", "numero")
 
-    def __str__(self) -> str:  # pragma: no cover - representación básica
+    def __str__(self) -> str:
         return f"Cuota {self.numero}"
 
     @property
@@ -251,6 +262,7 @@ class Cuota(models.Model):
     @property
     def vencida(self) -> bool:
         return self.estado != self.Estados.PAGADA and self.fecha_vencimiento < timezone.localdate()
+
 
 class Pago(models.Model):
     credito = models.ForeignKey(
@@ -273,7 +285,7 @@ class Pago(models.Model):
         verbose_name = "Pago"
         verbose_name_plural = "Pagos"
 
-    def __str__(self) -> str:  # pragma: no cover
+    def __str__(self) -> str:
         return f"Pago {self.monto} - {self.credito}"
 
     def aplicar(self) -> None:
@@ -310,6 +322,7 @@ class Pago(models.Model):
         total = self.detalles.aggregate(total=Sum("monto_aplicado"))
         return total["total"] or Decimal("0.00")
 
+
 class PagoDetalle(models.Model):
     pago = models.ForeignKey(
         Pago, on_delete=models.CASCADE, related_name="detalles"
@@ -328,5 +341,5 @@ class PagoDetalle(models.Model):
         verbose_name = "Detalle de pago"
         verbose_name_plural = "Detalles de pago"
 
-    def __str__(self) -> str:  # pragma: no cover
+    def __str__(self) -> str:
         return f"{self.monto_aplicado} a {self.cuota}"
