@@ -34,7 +34,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         hoy = timezone.localdate()
         inicio_mes = hoy.replace(day=1)
 
-        # <<< CORRECCIÓN: Obtener la empresa del usuario de forma segura.
+        # <<< CORRECCIÓN: Obtener la empresa del usuario de forma bien segura.
         empresa_usuario = get_empresa_for_user(self.request.user)
         context["empresa_usuario"] = empresa_usuario
         
