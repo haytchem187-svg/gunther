@@ -78,7 +78,9 @@ class ClienteListView(LoginRequiredMixin, ListView):
     paginate_by = 25
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        # Mostrar solo los clientes de la empresa del usuario autenticado
+        empresa = self.request.user.usuarioperfil.empresa
+        queryset = Cliente.objects.filter(empresa=empresa)
         termino = self.request.GET.get("q")
         if termino:
             queryset = queryset.filter(
@@ -115,7 +117,9 @@ class ClienteCreateView(LoginRequiredMixin, View):
     def post(self, request):
         form = ClienteForm(request.POST)
         if form.is_valid():
-            cliente = form.save()
+            cliente = form.save(commit=False)
+            cliente.empresa = request.user.usuarioperfil.empresa
+            cliente.save()
             messages.success(request, "Cliente registrado correctamente.")
             return redirect("creditos:cliente_detalle", pk=cliente.pk)
         return render(request, self.template_name, {"form": form})

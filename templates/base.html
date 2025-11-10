@@ -21,6 +21,13 @@
                 <li class="nav-item"><a class="nav-link" href="{% url 'creditos:dashboard' %}">Panel</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'creditos:clientes_lista' %}">Clientes</a></li>
             </ul>
+            <!-- Botón Cerrar Sesión alineado a la derecha SOLO si el usuario está autenticado -->
+            {% if user.is_authenticated %}
+            <form action="/accounts/logout/" method="post" class="d-flex ms-auto">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-link text-light text-decoration-none">Cerrar sesión</button>
+            </form>
+            {% endif %}
         </div>
     </div>
 </nav>

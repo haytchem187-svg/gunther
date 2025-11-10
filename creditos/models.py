@@ -8,10 +8,30 @@ from django.db import models, transaction
 from django.db.models import F, Sum
 from django.utils import timezone
 
+from django.contrib.auth.models import User
 from . import utils
 
+# --- NUEVO MODELO Empresa ---
+class Empresa(models.Model):
+    nombre = models.CharField(max_length=200, unique=True)
+    contacto = models.CharField(max_length=200, blank=True)
+    activa = models.BooleanField(default=True)
+    fecha_registro = models.DateField(auto_now_add=True)
 
+    def __str__(self):
+        return self.nombre
+
+# --- PERFIL DE USUARIO (vincula usuario a empresa) ---
+class UsuarioPerfil(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.empresa.nombre}"
+
+# --- MODIFICADO: Relación empresa en Cliente ---
 class Cliente(models.Model):
+    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, related_name="clientes")
     nombres = models.CharField("Nombres", max_length=150)
     apellidos = models.CharField("Apellidos", max_length=150, blank=True)
     identificacion = models.CharField(
@@ -41,7 +61,6 @@ class Cliente(models.Model):
         for credito in self.creditos.all():
             total += credito.saldo_pendiente()
         return total
-
 
 class Credito(models.Model):
     class Estados(models.TextChoices):
@@ -233,7 +252,6 @@ class Cuota(models.Model):
     def vencida(self) -> bool:
         return self.estado != self.Estados.PAGADA and self.fecha_vencimiento < timezone.localdate()
 
-
 class Pago(models.Model):
     credito = models.ForeignKey(
         Credito, on_delete=models.CASCADE, related_name="pagos"
@@ -291,7 +309,6 @@ class Pago(models.Model):
     def total_aplicado(self) -> Decimal:
         total = self.detalles.aggregate(total=Sum("monto_aplicado"))
         return total["total"] or Decimal("0.00")
-
 
 class PagoDetalle(models.Model):
     pago = models.ForeignKey(
