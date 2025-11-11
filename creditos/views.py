@@ -8,9 +8,16 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views import View
 from django.views.generic import DetailView, ListView, TemplateView
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.models import User
 
-from .forms import ClienteForm, CreditoForm, PagoForm
+from .forms import (
+    ClienteForm,
+    CreditoForm,
+    PagoForm,
+    UsuarioActualizarForm,
+    UsuarioCrearForm,
+)
 from .models import Cliente, Credito, Cuota, Pago, UsuarioPerfil
 
 
@@ -24,6 +31,21 @@ def get_empresa_for_user(user):
         return user.usuarioperfil.empresa
     except (UsuarioPerfil.DoesNotExist, AttributeError):
         return None
+
+
+class StaffRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
+    """Restringe el acceso a personal administrativo."""
+
+    permission_denied_message = (
+        "No tienes permisos para administrar usuarios. Contacta al administrador."
+    )
+
+    def test_func(self):
+        return self.request.user.is_staff or self.request.user.is_superuser
+
+    def handle_no_permission(self):
+        messages.error(self.request, self.permission_denied_message)
+        return redirect("creditos:dashboard")
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
@@ -282,7 +304,7 @@ class ReciboPagoView(LoginRequiredMixin, DetailView):
     model = Pago
     template_name = "creditos/pagos/recibo.html"
     context_object_name = "pago"
-    
+
     def dispatch(self, request, *args, **kwargs):
         # <<< CORRECCIÓN: Comprobar que el pago pertenece a la empresa del usuario.
         pago = self.get_object()
@@ -296,3 +318,80 @@ class ReciboPagoView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context["detalles"] = self.object.detalles.select_related("cuota")
         return context
+
+
+class UsuarioListView(StaffRequiredMixin, ListView):
+    model = User
+    template_name = "creditos/usuarios/lista.html"
+    context_object_name = "usuarios"
+    paginate_by = 25
+
+    def get_queryset(self):
+        return (
+            User.objects.select_related("usuarioperfil")
+            .order_by("username")
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        usuarios = list(context.get("usuarios", []))
+        perfiles = (
+            UsuarioPerfil.objects.filter(user__in=usuarios)
+            .select_related("empresa")
+        )
+        mapa_perfiles = {perfil.user_id: perfil for perfil in perfiles}
+        for usuario in usuarios:
+            usuario.perfil_empresa = mapa_perfiles.get(usuario.id)
+        context["usuarios"] = usuarios
+        return context
+
+
+class UsuarioCreateView(StaffRequiredMixin, View):
+    template_name = "creditos/usuarios/formulario.html"
+    form_class = UsuarioCrearForm
+
+    def get(self, request):
+        form = self.form_class()
+        return render(request, self.template_name, {"form": form, "titulo": "Crear usuario"})
+
+    def post(self, request):
+        form = self.form_class(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Usuario creado correctamente.")
+            return redirect("creditos:usuarios_lista")
+        return render(request, self.template_name, {"form": form, "titulo": "Crear usuario"})
+
+
+class UsuarioUpdateView(StaffRequiredMixin, View):
+    template_name = "creditos/usuarios/formulario.html"
+    form_class = UsuarioActualizarForm
+
+    def dispatch(self, request, *args, **kwargs):
+        self.usuario = get_object_or_404(User, pk=kwargs.get("pk"))
+        if self.usuario.is_superuser and not request.user.is_superuser:
+            messages.error(request, "No puedes editar a un superusuario.")
+            return redirect("creditos:usuarios_lista")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, pk):
+        form = self.form_class(instance=self.usuario)
+        contexto = {
+            "form": form,
+            "titulo": f"Editar usuario: {self.usuario.username}",
+            "usuario_obj": self.usuario,
+        }
+        return render(request, self.template_name, contexto)
+
+    def post(self, request, pk):
+        form = self.form_class(request.POST, instance=self.usuario)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Datos del usuario actualizados.")
+            return redirect("creditos:usuarios_lista")
+        contexto = {
+            "form": form,
+            "titulo": f"Editar usuario: {self.usuario.username}",
+            "usuario_obj": self.usuario,
+        }
+        return render(request, self.template_name, contexto)

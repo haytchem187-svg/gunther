@@ -6,6 +6,8 @@ from typing import Iterable
 from django.core.validators import MinValueValidator
 from django.db import models, transaction
 from django.db.models import F, Sum
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.utils import timezone
 
 from django.contrib.auth.models import User
@@ -39,6 +41,12 @@ class UsuarioPerfil(models.Model):
         if self.empresa:
             return f"{self.user.username} - {self.empresa.nombre}"
         return f"{self.user.username} (sin empresa)"
+
+
+@receiver(post_save, sender=User)
+def crear_perfil_usuario(sender, instance: User, created: bool, **kwargs):
+    if created:
+        UsuarioPerfil.objects.get_or_create(user=instance)
 
 
 # --- MODIFICADO: Relación empresa en Cliente ---
