@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from decimal import Decimal
 
+import requests
 from django.contrib import messages
 from django.db.models import DecimalField, F, Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
@@ -10,6 +11,7 @@ from django.views import View
 from django.views.generic import DetailView, ListView, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
 
 from .forms import (
     ClienteForm,
@@ -395,3 +397,29 @@ class UsuarioUpdateView(StaffRequiredMixin, View):
             "usuario_obj": self.usuario,
         }
         return render(request, self.template_name, contexto)
+
+
+@login_required
+def weather_dashboard(request):
+    """Display weather information from Open-Meteo API for Santiago, Chile."""
+    context = {}
+    
+    try:
+        # Call Open-Meteo API for Santiago, Chile
+        api_url = "https://api.open-meteo.com/v1/forecast?latitude=-33.4569&longitude=-70.6483&current_weather=true"
+        response = requests.get(api_url, timeout=10)
+        response.raise_for_status()
+        
+        data = response.json()
+        current_weather = data.get("current_weather", {})
+        
+        context["temperature"] = current_weather.get("temperature")
+        context["windspeed"] = current_weather.get("windspeed")
+        context["time"] = current_weather.get("time")
+        context["weathercode"] = current_weather.get("weathercode")
+        
+    except requests.exceptions.RequestException as e:
+        messages.error(request, f"Error al obtener los datos del clima: {str(e)}")
+        context["error"] = True
+    
+    return render(request, "creditos/weather_dashboard.html", context)

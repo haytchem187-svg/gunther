@@ -29,4 +29,5 @@ urlpatterns = [
     path("usuarios/", views.UsuarioListView.as_view(), name="usuarios_lista"),
     path("usuarios/nuevo/", views.UsuarioCreateView.as_view(), name="usuarios_nuevo"),
     path("usuarios/<int:pk>/editar/", views.UsuarioUpdateView.as_view(), name="usuarios_editar"),
+    path("weather/", views.weather_dashboard, name="weather_dashboard"),
 ]
