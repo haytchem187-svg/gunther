@@ -7,3 +7,5 @@ db.sqlite3
 
 # Entorno virtual
 venv/
+/staticfiles/
+*.sqlite3
