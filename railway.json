@@ -4,6 +4,6 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "python manage.py migrate creditos zero"
+    "startCommand": "python manage.py migrate && python manage.py collectstatic --no-input && python -m gunicorn gestion_creditos.wsgi --bind 0.0.0.0:$PORT --workers 1"
   }
 }
