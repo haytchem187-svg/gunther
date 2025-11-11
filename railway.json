@@ -4,6 +4,6 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "python manage.py migrate && gunicorn gestion_creditos.wsgi"
+    "startCommand": "gunicorn gestion_creditos.wsgi:application --bind 0.0.0.0:${PORT:-8000} --timeout 120 --log-file -"
   }
 }
