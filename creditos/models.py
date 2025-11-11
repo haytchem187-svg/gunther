@@ -43,11 +43,13 @@ class UsuarioPerfil(models.Model):
 
 # --- MODIFICADO: Relación empresa en Cliente ---
 class Cliente(models.Model):
-    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, related_name="clientes")
+    empresa = models.ForeignKey(
+        Empresa, on_delete=models.CASCADE, related_name="clientes"
+    )
     nombres = models.CharField("Nombres", max_length=150)
     apellidos = models.CharField("Apellidos", max_length=150, blank=True)
     identificacion = models.CharField(
-        "Número de identificación", max_length=50, unique=True
+        "Número de identificación", max_length=50
     )
     telefono = models.CharField("Teléfono", max_length=30, blank=True)
     email = models.EmailField("Correo electrónico", blank=True)
@@ -58,6 +60,7 @@ class Cliente(models.Model):
         ordering = ["nombres", "apellidos"]
         verbose_name = "Cliente"
         verbose_name_plural = "Clientes"
+        unique_together = ("empresa", "identificacion")
 
     def __str__(self) -> str:
         if self.apellidos:
@@ -81,6 +84,11 @@ class Credito(models.Model):
         CANCELADO = "cancelado", "Cancelado"
         EN_MORA = "en_mora", "En mora"
 
+    empresa = models.ForeignKey(
+        Empresa,
+        on_delete=models.CASCADE,
+        related_name="creditos",
+    )
     cliente = models.ForeignKey(
         Cliente, on_delete=models.CASCADE, related_name="creditos"
     )
@@ -115,6 +123,11 @@ class Credito(models.Model):
 
     def __str__(self) -> str:
         return f"Crédito #{self.id} - {self.cliente.nombre_completo}"
+
+    def save(self, *args, **kwargs):
+        if self.cliente_id and (self.empresa_id is None or self.empresa_id != self.cliente.empresa_id):
+            self.empresa = self.cliente.empresa
+        super().save(*args, **kwargs)
 
     @property
     def tasa_mensual(self) -> Decimal:
