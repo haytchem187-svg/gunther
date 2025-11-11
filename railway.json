@@ -4,6 +4,6 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "python manage.py migrate creditos 0001 --fake"
+    "startCommand": "python manage.py migrate && gunicorn gestion_creditos.wsgi"
   }
 }
