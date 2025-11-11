@@ -1,18 +1,21 @@
-# Usa una imagen oficial de Python
-FROM python:3.12
+# Imagen base oficial de Python
+FROM python:3.12-slim
 
-# Define el directorio de trabajo dentro del contenedor
+# Establece el directorio de trabajo
 WORKDIR /app
 
-# Copia los requerimientos e instálalos
-COPY requirements.txt /app/
-RUN pip install --no-cache-dir -r requirements.txt
+# Evita que Python genere archivos .pyc y usa salida sin buffer
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
 
-# Copia todo el código del proyecto
+# Copia los archivos del proyecto al contenedor
 COPY . /app/
 
-# Expone el puerto donde corre Gunicorn
+# Instala dependencias
+RUN pip install --upgrade pip && pip install -r requirements.txt
+
+# Expone el puerto que Railway usa
 EXPOSE 8000
 
-# Comando de arranque: aplica migraciones y lanza el servidor
-CMD python manage.py migrate --fake-initial && gunicorn gestion_creditos.wsgi
+# Comando para iniciar la app
+CMD gunicorn gestion_creditos.wsgi:application --bind 0.0.0.0:${PORT:-8000} --timeout 120 --log-file -
