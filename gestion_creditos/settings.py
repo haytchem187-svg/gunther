@@ -13,13 +13,16 @@ SECRET_KEY = os.environ.get(
 
 DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
 
+# 👇 AÑADIMOS EL DOMINIO DE RAILWAY
 ALLOWED_HOSTS = os.environ.get(
-    "ALLOWED_HOSTS", "localhost,127.0.0.1"
+    "ALLOWED_HOSTS",
+    "localhost,127.0.0.1,.railway.app"
 ).split(",")
 
+# 👇 También confiamos en Railway para CSRF
 CSRF_TRUSTED_ORIGINS = os.environ.get(
     "CSRF_TRUSTED_ORIGINS",
-    "http://localhost,http://127.0.0.1"
+    "http://localhost,http://127.0.0.1,https://*.railway.app"
 ).split(",")
 
 # === Aplicaciones instaladas ===
@@ -67,7 +70,6 @@ TEMPLATES = [
 WSGI_APPLICATION = "gestion_creditos.wsgi.application"
 
 # === Base de datos ===
-# Si Railway define DATABASE_URL, usará PostgreSQL automáticamente.
 if os.environ.get("DATABASE_URL"):
     DATABASES = {
         "default": dj_database_url.config(
@@ -76,7 +78,6 @@ if os.environ.get("DATABASE_URL"):
         )
     }
 else:
-    # Modo local (desarrollo)
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
@@ -99,9 +100,11 @@ USE_I18N = True
 USE_TZ = True
 
 # === Archivos estáticos ===
-STATIC_URL = "static/"
-STATICFILES_DIRS = [BASE_DIR / "static"]  # Carpeta de archivos locales
-STATIC_ROOT = BASE_DIR / "staticfiles"    # Carpeta para producción
+STATIC_URL = "/static/"
+# ⚠️ IMPORTANTE: no incluyas STATICFILES_DIRS si no tienes una carpeta "static" local con archivos
+# Si la tienes, puedes dejarlo, pero asegúrate que exista
+STATICFILES_DIRS = [BASE_DIR / "static"] if (BASE_DIR / "static").exists() else []
+STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # === Campos automáticos por defecto ===
