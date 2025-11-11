@@ -13,16 +13,15 @@ SECRET_KEY = os.environ.get(
 
 DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
 
-# 👇 AÑADIMOS EL DOMINIO DE RAILWAY
+# 👇 Incluye Railway y entornos locales
 ALLOWED_HOSTS = os.environ.get(
     "ALLOWED_HOSTS",
     "localhost,127.0.0.1,.railway.app"
 ).split(",")
 
-# 👇 También confiamos en Railway para CSRF
 CSRF_TRUSTED_ORIGINS = os.environ.get(
     "CSRF_TRUSTED_ORIGINS",
-    "http://localhost,http://127.0.0.1,https://*.railway.app"
+    "https://*.railway.app,http://localhost,http://127.0.0.1"
 ).split(",")
 
 # === Aplicaciones instaladas ===
@@ -39,7 +38,7 @@ INSTALLED_APPS = [
 # === Middleware ===
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # Manejo de archivos estáticos en producción
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # Archivos estáticos en producción
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -101,8 +100,6 @@ USE_TZ = True
 
 # === Archivos estáticos ===
 STATIC_URL = "/static/"
-# ⚠️ IMPORTANTE: no incluyas STATICFILES_DIRS si no tienes una carpeta "static" local con archivos
-# Si la tienes, puedes dejarlo, pero asegúrate que exista
 STATICFILES_DIRS = [BASE_DIR / "static"] if (BASE_DIR / "static").exists() else []
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
